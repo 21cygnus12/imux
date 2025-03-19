@@ -4,7 +4,7 @@ use iced::widget::{Container, button, column, container, responsive, row, scroll
 use iced::{Center, Color, Element, Fill, Size, Subscription};
 
 pub fn main() -> iced::Result {
-    iced::application("Pane Grid - Iced", Imux::update, Imux::view)
+    iced::application("imux", Imux::update, Imux::view)
         .subscription(Imux::subscription)
         .run()
 }
