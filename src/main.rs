@@ -1,6 +1,6 @@
 use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
-use iced::widget::{Container, button, column, container, responsive, scrollable, text};
+use iced::widget::{Container, column, container, responsive, scrollable, text};
 use iced::{Center, Element, Fill, Size, Subscription};
 
 pub fn main() -> iced::Result {
@@ -17,13 +17,11 @@ struct Imux {
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
-    Split(pane_grid::Axis, pane_grid::Pane),
     SplitFocused(pane_grid::Axis),
     FocusAdjacent(pane_grid::Direction),
     Clicked(pane_grid::Pane),
     Dragged(pane_grid::DragEvent),
     Resized(pane_grid::ResizeEvent),
-    Close(pane_grid::Pane),
     CloseFocused,
 }
 
@@ -40,15 +38,6 @@ impl Imux {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::Split(axis, pane) => {
-                let result = self.panes.split(axis, pane, Pane::new());
-
-                if let Some((pane, _)) = result {
-                    self.focus = Some(pane);
-                }
-
-                self.panes_created += 1;
-            }
             Message::SplitFocused(axis) => {
                 if let Some(pane) = self.focus {
                     let result = self.panes.split(axis, pane, Pane::new());
@@ -77,11 +66,6 @@ impl Imux {
                 self.panes.drop(pane, target);
             }
             Message::Dragged(_) => {}
-            Message::Close(pane) => {
-                if let Some((_, sibling)) = self.panes.close(pane) {
-                    self.focus = Some(sibling);
-                }
-            }
             Message::CloseFocused => {
                 if let Some(pane) = self.focus {
                     if let Some(Pane { is_pinned, .. }) = self.panes.get(pane) {
@@ -108,15 +92,11 @@ impl Imux {
 
     fn view(&self) -> Element<Message> {
         let focus = self.focus;
-        let total_panes = self.panes.len();
 
-        let pane_grid = PaneGrid::new(&self.panes, |id, pane, _is_maximized| {
+        let pane_grid = PaneGrid::new(&self.panes, |id, _pane, _is_maximized| {
             let is_focused = focus == Some(id);
 
-            pane_grid::Content::new(responsive(move |size| {
-                view_content(id, total_panes, pane.is_pinned, size)
-            }))
-            .style(if is_focused {
+            pane_grid::Content::new(responsive(view_content)).style(if is_focused {
                 style::pane_focused
             } else {
                 style::pane_active
@@ -173,38 +153,8 @@ impl Pane {
     }
 }
 
-fn view_content<'a>(
-    pane: pane_grid::Pane,
-    total_panes: usize,
-    is_pinned: bool,
-    size: Size,
-) -> Element<'a, Message> {
-    let button = |label, message| {
-        button(text(label).width(Fill).align_x(Center).size(16))
-            .width(Fill)
-            .padding(8)
-            .on_press(message)
-    };
-
-    let controls = column![
-        button(
-            "Split horizontally",
-            Message::Split(pane_grid::Axis::Horizontal, pane),
-        ),
-        button(
-            "Split vertically",
-            Message::Split(pane_grid::Axis::Vertical, pane),
-        )
-    ]
-    .push_maybe(if total_panes > 1 && !is_pinned {
-        Some(button("Close", Message::Close(pane)).style(button::danger))
-    } else {
-        None
-    })
-    .spacing(5)
-    .max_width(160);
-
-    let content = column![text!("{}x{}", size.width, size.height).size(24), controls,]
+fn view_content<'a>(size: Size) -> Element<'a, Message> {
+    let content = column![text!("{}x{}", size.width, size.height).size(24),]
         .spacing(10)
         .align_x(Center);
 
