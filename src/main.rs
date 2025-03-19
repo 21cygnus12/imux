@@ -1,7 +1,7 @@
 use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
-use iced::widget::{Container, button, column, container, responsive, row, scrollable, text};
-use iced::{Center, Color, Element, Fill, Size, Subscription};
+use iced::widget::{Container, button, column, container, responsive, scrollable, text};
+use iced::{Center, Element, Fill, Size, Subscription};
 
 pub fn main() -> iced::Result {
     iced::application("imux", Imux::update, Imux::view)
@@ -29,7 +29,7 @@ enum Message {
 
 impl Imux {
     fn new() -> Self {
-        let (panes, _) = pane_grid::State::new(Pane::new(0));
+        let (panes, _) = pane_grid::State::new(Pane::new());
 
         Imux {
             panes,
@@ -41,7 +41,7 @@ impl Imux {
     fn update(&mut self, message: Message) {
         match message {
             Message::Split(axis, pane) => {
-                let result = self.panes.split(axis, pane, Pane::new(self.panes_created));
+                let result = self.panes.split(axis, pane, Pane::new());
 
                 if let Some((pane, _)) = result {
                     self.focus = Some(pane);
@@ -51,7 +51,7 @@ impl Imux {
             }
             Message::SplitFocused(axis) => {
                 if let Some(pane) = self.focus {
-                    let result = self.panes.split(axis, pane, Pane::new(self.panes_created));
+                    let result = self.panes.split(axis, pane, Pane::new());
 
                     if let Some((pane, _)) = result {
                         self.focus = Some(pane);
@@ -113,28 +113,9 @@ impl Imux {
         let pane_grid = PaneGrid::new(&self.panes, |id, pane, _is_maximized| {
             let is_focused = focus == Some(id);
 
-            let title = row![
-                "Pane",
-                text(pane.id.to_string()).color(if is_focused {
-                    PANE_ID_COLOR_FOCUSED
-                } else {
-                    PANE_ID_COLOR_UNFOCUSED
-                }),
-            ]
-            .spacing(5);
-
-            let title_bar = pane_grid::TitleBar::new(title)
-                .padding(10)
-                .style(if is_focused {
-                    style::title_bar_focused
-                } else {
-                    style::title_bar_active
-                });
-
             pane_grid::Content::new(responsive(move |size| {
                 view_content(id, total_panes, pane.is_pinned, size)
             }))
-            .title_bar(title_bar)
             .style(if is_focused {
                 style::pane_focused
             } else {
@@ -157,17 +138,6 @@ impl Default for Imux {
         Imux::new()
     }
 }
-
-const PANE_ID_COLOR_UNFOCUSED: Color = Color::from_rgb(
-    0xFF as f32 / 255.0,
-    0xC7 as f32 / 255.0,
-    0xC7 as f32 / 255.0,
-);
-const PANE_ID_COLOR_FOCUSED: Color = Color::from_rgb(
-    0xFF as f32 / 255.0,
-    0x47 as f32 / 255.0,
-    0x47 as f32 / 255.0,
-);
 
 fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
     use keyboard::key::{self, Key};
@@ -194,16 +164,12 @@ fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
 
 #[derive(Clone, Copy)]
 struct Pane {
-    id: usize,
     pub is_pinned: bool,
 }
 
 impl Pane {
-    fn new(id: usize) -> Self {
-        Self {
-            id,
-            is_pinned: false,
-        }
+    fn new() -> Self {
+        Self { is_pinned: false }
     }
 }
 
@@ -251,26 +217,6 @@ fn view_content<'a>(
 mod style {
     use iced::widget::container;
     use iced::{Border, Theme};
-
-    pub fn title_bar_active(theme: &Theme) -> container::Style {
-        let palette = theme.extended_palette();
-
-        container::Style {
-            text_color: Some(palette.background.strong.text),
-            background: Some(palette.background.strong.color.into()),
-            ..Default::default()
-        }
-    }
-
-    pub fn title_bar_focused(theme: &Theme) -> container::Style {
-        let palette = theme.extended_palette();
-
-        container::Style {
-            text_color: Some(palette.primary.strong.text),
-            background: Some(palette.primary.strong.color.into()),
-            ..Default::default()
-        }
-    }
 
     pub fn pane_active(theme: &Theme) -> container::Style {
         let palette = theme.extended_palette();
