@@ -4,12 +4,12 @@ use iced::{Alignment, keyboard};
 use iced::{Center, Color, Element, Fill, Size, Subscription};
 
 pub fn main() -> iced::Result {
-    iced::application("Pane Grid - Iced", Example::update, Example::view)
-        .subscription(Example::subscription)
+    iced::application("Pane Grid - Iced", Imux::update, Imux::view)
+        .subscription(Imux::subscription)
         .run()
 }
 
-struct Example {
+struct Imux {
     panes: pane_grid::State<Pane>,
     panes_created: usize,
     focus: Option<pane_grid::Pane>,
@@ -30,11 +30,11 @@ enum Message {
     CloseFocused,
 }
 
-impl Example {
+impl Imux {
     fn new() -> Self {
         let (panes, _) = pane_grid::State::new(Pane::new(0));
 
-        Example {
+        Imux {
             panes,
             panes_created: 1,
             focus: None,
@@ -180,9 +180,9 @@ impl Example {
     }
 }
 
-impl Default for Example {
+impl Default for Imux {
     fn default() -> Self {
-        Example::new()
+        Imux::new()
     }
 }
 
