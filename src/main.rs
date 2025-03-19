@@ -23,9 +23,6 @@ enum Message {
     Clicked(pane_grid::Pane),
     Dragged(pane_grid::DragEvent),
     Resized(pane_grid::ResizeEvent),
-    TogglePin(pane_grid::Pane),
-    Maximize(pane_grid::Pane),
-    Restore,
     Close(pane_grid::Pane),
     CloseFocused,
 }
@@ -80,15 +77,6 @@ impl Imux {
                 self.panes.drop(pane, target);
             }
             Message::Dragged(_) => {}
-            Message::TogglePin(pane) => {
-                if let Some(Pane { is_pinned, .. }) = self.panes.get_mut(pane) {
-                    *is_pinned = !*is_pinned;
-                }
-            }
-            Message::Maximize(pane) => self.panes.maximize(pane),
-            Message::Restore => {
-                self.panes.restore();
-            }
             Message::Close(pane) => {
                 if let Some((_, sibling)) = self.panes.close(pane) {
                     self.focus = Some(sibling);
@@ -122,15 +110,10 @@ impl Imux {
         let focus = self.focus;
         let total_panes = self.panes.len();
 
-        let pane_grid = PaneGrid::new(&self.panes, |id, pane, is_maximized| {
+        let pane_grid = PaneGrid::new(&self.panes, |id, pane, _is_maximized| {
             let is_focused = focus == Some(id);
 
-            let pin_button = button(text(if pane.is_pinned { "Unpin" } else { "Pin" }).size(14))
-                .on_press(Message::TogglePin(id))
-                .padding(3);
-
             let title = row![
-                pin_button,
                 "Pane",
                 text(pane.id.to_string()).color(if is_focused {
                     PANE_ID_COLOR_FOCUSED
@@ -141,17 +124,6 @@ impl Imux {
             .spacing(5);
 
             let title_bar = pane_grid::TitleBar::new(title)
-                .controls(pane_grid::Controls::dynamic(
-                    view_controls(id, total_panes, pane.is_pinned, is_maximized),
-                    button(text("X").size(14))
-                        .style(button::danger)
-                        .padding(3)
-                        .on_press_maybe(if total_panes > 1 && !pane.is_pinned {
-                            Some(Message::Close(id))
-                        } else {
-                            None
-                        }),
-                ))
                 .padding(10)
                 .style(if is_focused {
                     style::title_bar_focused
@@ -274,41 +246,6 @@ fn view_content<'a>(
         .align_y(Center)
         .padding(5)
         .into()
-}
-
-fn view_controls<'a>(
-    pane: pane_grid::Pane,
-    total_panes: usize,
-    is_pinned: bool,
-    is_maximized: bool,
-) -> Element<'a, Message> {
-    let row = row![].spacing(5).push_maybe(if total_panes > 1 {
-        let (content, message) = if is_maximized {
-            ("Restore", Message::Restore)
-        } else {
-            ("Maximize", Message::Maximize(pane))
-        };
-
-        Some(
-            button(text(content).size(14))
-                .style(button::secondary)
-                .padding(3)
-                .on_press(message),
-        )
-    } else {
-        None
-    });
-
-    let close = button(text("Close").size(14))
-        .style(button::danger)
-        .padding(3)
-        .on_press_maybe(if total_panes > 1 && !is_pinned {
-            Some(Message::Close(pane))
-        } else {
-            None
-        });
-
-    row.push(close).into()
 }
 
 mod style {
