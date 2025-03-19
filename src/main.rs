@@ -1,6 +1,6 @@
+use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
 use iced::widget::{Container, button, column, container, responsive, row, scrollable, text};
-use iced::{Alignment, keyboard};
 use iced::{Center, Color, Element, Fill, Size, Subscription};
 
 pub fn main() -> iced::Result {
@@ -271,7 +271,7 @@ fn view_content<'a>(
         .align_x(Center);
 
     Container::new(scrollable(content))
-        .align_y(Alignment::Center)
+        .align_y(Center)
         .padding(5)
         .into()
 }
