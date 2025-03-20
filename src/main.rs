@@ -81,26 +81,12 @@ impl Imux {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(|key_code, modifiers| {
-            if !modifiers.command() {
-                return None;
-            }
-
-            handle_hotkey(key_code)
-        })
+        keyboard::on_key_press(handle_hotkey)
     }
 
     fn view(&self) -> Element<Message> {
-        let focus = self.focus;
-
-        let pane_grid = PaneGrid::new(&self.panes, |id, _pane, _is_maximized| {
-            let is_focused = focus == Some(id);
-
-            pane_grid::Content::new(responsive(view_content)).style(if is_focused {
-                style::pane_focused
-            } else {
-                style::pane_active
-            })
+        let pane_grid = PaneGrid::new(&self.panes, |_id, _pane, _is_maximized| {
+            pane_grid::Content::new(responsive(view_content))
         })
         .width(Fill)
         .height(Fill)
@@ -119,25 +105,18 @@ impl Default for Imux {
     }
 }
 
-fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
-    use keyboard::key::{self, Key};
+fn handle_hotkey(key: keyboard::Key, _modifiers: keyboard::Modifiers) -> Option<Message> {
+    use keyboard::key::Key;
     use pane_grid::{Axis, Direction};
 
     match key.as_ref() {
-        Key::Character("v") => Some(Message::SplitFocused(Axis::Vertical)),
-        Key::Character("h") => Some(Message::SplitFocused(Axis::Horizontal)),
+        Key::Character("5") => Some(Message::SplitFocused(Axis::Vertical)),
+        Key::Character("t") => Some(Message::SplitFocused(Axis::Horizontal)),
         Key::Character("w") => Some(Message::CloseFocused),
-        Key::Named(key) => {
-            let direction = match key {
-                key::Named::ArrowUp => Some(Direction::Up),
-                key::Named::ArrowDown => Some(Direction::Down),
-                key::Named::ArrowLeft => Some(Direction::Left),
-                key::Named::ArrowRight => Some(Direction::Right),
-                _ => None,
-            };
-
-            direction.map(Message::FocusAdjacent)
-        }
+        Key::Character("h") => Some(Message::FocusAdjacent(Direction::Left)),
+        Key::Character("j") => Some(Message::FocusAdjacent(Direction::Down)),
+        Key::Character("k") => Some(Message::FocusAdjacent(Direction::Up)),
+        Key::Character("l") => Some(Message::FocusAdjacent(Direction::Right)),
         _ => None,
     }
 }
@@ -162,37 +141,4 @@ fn view_content<'a>(size: Size) -> Element<'a, Message> {
         .align_y(Center)
         .padding(5)
         .into()
-}
-
-mod style {
-    use iced::widget::container;
-    use iced::{Border, Theme};
-
-    pub fn pane_active(theme: &Theme) -> container::Style {
-        let palette = theme.extended_palette();
-
-        container::Style {
-            background: Some(palette.background.weak.color.into()),
-            border: Border {
-                width: 2.0,
-                color: palette.background.strong.color,
-                ..Border::default()
-            },
-            ..Default::default()
-        }
-    }
-
-    pub fn pane_focused(theme: &Theme) -> container::Style {
-        let palette = theme.extended_palette();
-
-        container::Style {
-            background: Some(palette.background.weak.color.into()),
-            border: Border {
-                width: 2.0,
-                color: palette.primary.strong.color,
-                ..Border::default()
-            },
-            ..Default::default()
-        }
-    }
 }
