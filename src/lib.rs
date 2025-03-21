@@ -1,5 +1,5 @@
-use iced::keyboard;
-use iced::widget::pane_grid::{self, PaneGrid};
+use iced::keyboard::{self, Key};
+use iced::widget::pane_grid::{self, Axis, Direction, PaneGrid};
 use iced::widget::{Container, container, image, mouse_area, responsive};
 use iced::{Center, Element, Fill, Subscription};
 
@@ -94,9 +94,6 @@ impl Default for Imux {
 }
 
 fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
-    use keyboard::key::Key;
-    use pane_grid::{Axis, Direction};
-
     match key.as_ref() {
         Key::Character("5") => Some(Message::SplitFocused(Axis::Vertical)),
         Key::Character("t") => Some(Message::SplitFocused(Axis::Horizontal)),
