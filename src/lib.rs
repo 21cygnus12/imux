@@ -1,7 +1,7 @@
 use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
-use iced::widget::{Container, column, container, responsive, text};
-use iced::{Center, Element, Fill, Size, Subscription};
+use iced::widget::{Container, container, image, responsive};
+use iced::{Center, Element, Fill, Subscription};
 
 pub struct Imux {
     panes: pane_grid::State<Pane>,
@@ -80,7 +80,7 @@ impl Imux {
 
     pub fn view(&self) -> Element<Message> {
         let pane_grid = PaneGrid::new(&self.panes, |_id, _pane, _is_maximized| {
-            pane_grid::Content::new(responsive(view_content))
+            pane_grid::Content::new(responsive(|_size| view_content()))
         })
         .width(Fill)
         .height(Fill)
@@ -126,10 +126,8 @@ impl Pane {
     }
 }
 
-fn view_content<'a>(size: Size) -> Element<'a, Message> {
-    let content = column![text!("{}x{}", size.width, size.height).size(24),]
-        .spacing(10)
-        .align_x(Center);
+fn view_content<'a>() -> Element<'a, Message> {
+    let content = image("ferris.png");
 
     Container::new(content).align_y(Center).padding(5).into()
 }
