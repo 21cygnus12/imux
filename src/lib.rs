@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use iced::keyboard::{self, Key};
 use iced::widget::pane_grid::{self, Axis, Direction, PaneGrid};
 use iced::widget::{Container, container, image, mouse_area, responsive};
@@ -20,7 +22,7 @@ pub enum Message {
 
 impl Imux {
     fn new() -> Self {
-        let (panes, _) = pane_grid::State::new(Pane::new());
+        let (panes, _) = pane_grid::State::new(Pane::new(None));
 
         Imux { panes, focus: None }
     }
@@ -29,7 +31,7 @@ impl Imux {
         match message {
             Message::SplitFocused(axis) => {
                 if let Some(pane) = self.focus {
-                    let result = self.panes.split(axis, pane, Pane::new());
+                    let result = self.panes.split(axis, pane, Pane::new(None));
 
                     if let Some((pane, _)) = result {
                         self.focus = Some(pane);
@@ -106,14 +108,25 @@ fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct Pane {
     is_pinned: bool,
+    path: Option<PathBuf>,
 }
 
 impl Pane {
-    fn new() -> Self {
-        Self { is_pinned: false }
+    fn new(path: Option<PathBuf>) -> Self {
+        if path.is_some() {
+            Self {
+                is_pinned: false,
+                path,
+            }
+        } else {
+            Self {
+                is_pinned: false,
+                path: None,
+            }
+        }
     }
 }
 
