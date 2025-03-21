@@ -111,7 +111,7 @@ fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
 
 #[derive(Clone, Copy)]
 struct Pane {
-    pub is_pinned: bool,
+    is_pinned: bool,
 }
 
 impl Pane {
