@@ -5,7 +5,6 @@ use iced::{Center, Element, Fill, Subscription};
 
 pub struct Imux {
     panes: pane_grid::State<Pane>,
-    panes_created: usize,
     focus: Option<pane_grid::Pane>,
 }
 
@@ -23,11 +22,7 @@ impl Imux {
     fn new() -> Self {
         let (panes, _) = pane_grid::State::new(Pane::new());
 
-        Imux {
-            panes,
-            panes_created: 1,
-            focus: None,
-        }
+        Imux { panes, focus: None }
     }
 
     pub fn update(&mut self, message: Message) {
@@ -39,8 +34,6 @@ impl Imux {
                     if let Some((pane, _)) = result {
                         self.focus = Some(pane);
                     }
-
-                    self.panes_created += 1;
                 }
             }
             Message::FocusAdjacent(direction) => {
