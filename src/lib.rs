@@ -1,6 +1,6 @@
 use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
-use iced::widget::{Container, column, container, responsive, scrollable, text};
+use iced::widget::{Container, column, container, responsive, text};
 use iced::{Center, Element, Fill, Size, Subscription};
 
 pub struct Imux {
@@ -131,8 +131,5 @@ fn view_content<'a>(size: Size) -> Element<'a, Message> {
         .spacing(10)
         .align_x(Center);
 
-    Container::new(scrollable(content))
-        .align_y(Center)
-        .padding(5)
-        .into()
+    Container::new(content).align_y(Center).padding(5).into()
 }
