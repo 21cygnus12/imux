@@ -1,6 +1,6 @@
 use iced::keyboard::{self, Key};
 use iced::widget::pane_grid::{self, Axis, Direction, PaneGrid};
-use iced::widget::{Container, container, image, mouse_area, responsive};
+use iced::widget::{Container, container, image, mouse_area, responsive, text};
 use iced::{Center, Element, Fill, Subscription};
 use std::path::PathBuf;
 
@@ -73,9 +73,10 @@ impl Imux {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let pane_grid = PaneGrid::new(&self.panes, |id, _pane, _is_maximized| {
+        let pane_grid = PaneGrid::new(&self.panes, |id, pane, _is_maximized| {
             pane_grid::Content::new(
-                mouse_area(responsive(|_size| view_content())).on_enter(Message::Hovered(id)),
+                mouse_area(responsive(|_size| view_content(&pane.image_path)))
+                    .on_enter(Message::Hovered(id)),
             )
         })
         .width(Fill)
@@ -110,27 +111,31 @@ fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
 #[derive(Clone)]
 struct Pane {
     is_pinned: bool,
-    path: Option<PathBuf>,
+    image_path: Option<PathBuf>,
 }
 
 impl Pane {
-    fn new(path: Option<PathBuf>) -> Self {
-        if path.is_some() {
+    fn new(image_path: Option<PathBuf>) -> Self {
+        if image_path.is_some() {
             Self {
                 is_pinned: false,
-                path,
+                image_path,
             }
         } else {
             Self {
                 is_pinned: false,
-                path: None,
+                image_path: None,
             }
         }
     }
 }
 
-fn view_content<'a>() -> Element<'a, Message> {
-    let content = image("ferris.png");
-
-    Container::new(content).align_y(Center).padding(5).into()
+fn view_content<'a>(image_path: &Option<PathBuf>) -> Element<'a, Message> {
+    if let Some(image_path) = image_path {
+        let content = image(image_path);
+        Container::new(content).align_y(Center).padding(5).into()
+    } else {
+        let content = text("test");
+        Container::new(content).align_y(Center).padding(5).into()
+    }
 }
