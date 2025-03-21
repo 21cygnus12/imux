@@ -1,9 +1,8 @@
-use std::path::PathBuf;
-
 use iced::keyboard::{self, Key};
 use iced::widget::pane_grid::{self, Axis, Direction, PaneGrid};
 use iced::widget::{Container, container, image, mouse_area, responsive};
 use iced::{Center, Element, Fill, Subscription};
+use std::path::PathBuf;
 
 pub struct Imux {
     panes: pane_grid::State<Pane>,
