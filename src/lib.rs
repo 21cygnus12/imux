@@ -1,6 +1,6 @@
 use iced::keyboard;
 use iced::widget::pane_grid::{self, PaneGrid};
-use iced::widget::{Container, container, image, responsive};
+use iced::widget::{Container, container, image, mouse_area, responsive};
 use iced::{Center, Element, Fill, Subscription};
 
 pub struct Imux {
@@ -12,7 +12,7 @@ pub struct Imux {
 pub enum Message {
     SplitFocused(pane_grid::Axis),
     FocusAdjacent(pane_grid::Direction),
-    Clicked(pane_grid::Pane),
+    Hovered(pane_grid::Pane),
     Dragged(pane_grid::DragEvent),
     Resized(pane_grid::ResizeEvent),
     CloseFocused,
@@ -43,7 +43,7 @@ impl Imux {
                     }
                 }
             }
-            Message::Clicked(pane) => {
+            Message::Hovered(pane) => {
                 self.focus = Some(pane);
             }
             Message::Resized(pane_grid::ResizeEvent { split, ratio }) => {
@@ -72,13 +72,14 @@ impl Imux {
     }
 
     pub fn view(&self) -> Element<Message> {
-        let pane_grid = PaneGrid::new(&self.panes, |_id, _pane, _is_maximized| {
-            pane_grid::Content::new(responsive(|_size| view_content()))
+        let pane_grid = PaneGrid::new(&self.panes, |id, _pane, _is_maximized| {
+            pane_grid::Content::new(
+                mouse_area(responsive(|_size| view_content())).on_enter(Message::Hovered(id)),
+            )
         })
         .width(Fill)
         .height(Fill)
         .spacing(10)
-        .on_click(Message::Clicked)
         .on_drag(Message::Dragged)
         .on_resize(10, Message::Resized);
 
