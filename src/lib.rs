@@ -75,7 +75,7 @@ impl Imux {
     }
 
     pub fn subscription(&self) -> Subscription<Message> {
-        keyboard::on_key_press(handle_hotkey)
+        keyboard::on_key_press(|key, _modifiers| handle_hotkey(key))
     }
 
     pub fn view(&self) -> Element<Message> {
@@ -99,7 +99,7 @@ impl Default for Imux {
     }
 }
 
-fn handle_hotkey(key: keyboard::Key, _modifiers: keyboard::Modifiers) -> Option<Message> {
+fn handle_hotkey(key: keyboard::Key) -> Option<Message> {
     use keyboard::key::Key;
     use pane_grid::{Axis, Direction};
 
